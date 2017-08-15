@@ -6,11 +6,20 @@ options(scipen=999)
 options(max.print=10000)
 options(warn=1)
 
-inFilePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/"
-inFileName <- "listings_20170324.csv"
-outFilePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/output/"
-codePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/r_scripts/analysis/rental-listing-cleaner/"
-spatialSrcPath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/spatial"
+#inFilePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/"
+#inFileName <- "listings_20170324.csv"
+#outFilePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/output/"
+#codePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/r_scripts/analysis/rental-listing-cleaner/"
+#spatialSrcPath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/spatial"
+
+inFilePath <- Sys.getenv("IN_FILE_PATH")
+inFileName <- Sys.getenv("IN_FILE_NAME")
+inGeoName <- Sys.getenv("IN_GEO_NAME")
+outFilePath <- Sys.getenv("OUT_FILE_PATH")
+
+codePath <- Sys.getenv("CODE_PATH")
+spatialSrcPath <- Sys.getenv("SPATIAL_SRC_PATH")
+
 
 ######function calls #############
 getwd()
@@ -39,10 +48,11 @@ listings_unique <- remove_duplicates(listings_unique)
 listings_unique <- room_validator(listings_unique)
 
 #merge the data of listings unique with geo-located data
-carlos_file <- read.csv("K:/DataServices/Projects/Current_Projects/rental_listings_research/data/carlos/170726_padmapper_sample_2.csv")
+#carlos_file <- read.csv("K:/DataServices/Projects/Current_Projects/rental_listings_research/data/carlos/170726_padmapper_sample_2.csv")
+setwd(inFilePath)
+carlos_file <- read.csv(inGeoName)
 y = carlos_file[ , c("id","fwd_geolocated", "rev_geolocated",'latitude_merge','longitude_merge','joint_addresses_merge','mapzen_geolocated','mapzen_confidence')] 
 listings_unique <- merge(listings_unique, y, by ="id",all.x = TRUE)
 
 ###frequency table for the whole dataset/listings_unique and sample
 generate_tables(listings_unique)
-                 

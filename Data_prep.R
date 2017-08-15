@@ -17,10 +17,16 @@ require(rgdal)
 require(raster)
 require(foreign)
 
-inFilePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/"
-outFilePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/output/"
-codePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/r_scripts/analysis/rental-listing-cleaner/"
-spatialSrcPath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/spatial"
+#inFilePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/"
+#outFilePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/output/"
+#codePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/r_scripts/analysis/rental-listing-cleaner/"
+#spatialSrcPath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/spatial"
+
+inFilePath <- Sys.getenv("IN_FILE_PATH")
+outFilePath <- Sys.getenv("OUT_FILE_PATH")
+codePath <- Sys.getenv("CODE_PATH")
+spatialSrcPath <- Sys.getenv("SPATIAL_SRC_PATH")
+
 
 today <- Sys.Date()
 year<- format(today, "%Y")
