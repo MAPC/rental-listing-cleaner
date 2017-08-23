@@ -1090,7 +1090,7 @@ generate_tables <- function (listings){
   write.csv(table_neighborhoods1, paste("table_neighborhoods1",year,month,day,".csv", sep="_"))
   write.csv(table_neighborhoods2, paste("table_neighborhoods2",year,month,day,".csv", sep="_"))
   write.csv(table_neighborhoods3, paste("table_neighborhoods3",year,month,day,".csv", sep="_"))
-  write.csv(listings, paste(unixTime,"listings_unique",year,month,day,".csv", sep="_"))
+  write.csv(listings, paste(unixTime,"listings_unique.csv", sep="_"))
   write.csv(listings_sample, paste("10_pct_listings_sample",year,month,day,".csv", sep="_"))
   
   setwd(codePath)
