@@ -32,6 +32,7 @@ today <- Sys.Date()
 year<- format(today, "%Y")
 month <- format(today, "%m")
 day <- format(today, "%d")
+unixTime <- as.numeric(Sys.time())
 
 #clean_raw_listing function cleans the title, removes duplicates and assigns spatial locations
 clean_raw_listing <- function(listing){
@@ -1089,7 +1090,7 @@ generate_tables <- function (listings){
   write.csv(table_neighborhoods1, paste("table_neighborhoods1",year,month,day,".csv", sep="_"))
   write.csv(table_neighborhoods2, paste("table_neighborhoods2",year,month,day,".csv", sep="_"))
   write.csv(table_neighborhoods3, paste("table_neighborhoods3",year,month,day,".csv", sep="_"))
-  write.csv(listings, paste("listings_unique",year,month,day,".csv", sep="_"))
+  write.csv(listings, paste(unixTime,"listings_unique",year,month,day,".csv", sep="_"))
   write.csv(listings_sample, paste("10_pct_listings_sample",year,month,day,".csv", sep="_"))
   
   setwd(codePath)
