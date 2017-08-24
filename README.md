@@ -292,7 +292,7 @@ Prints  the results of neighboprhood, census tract, town statistics on the file 
 
 
 
-##*main.R*
+## *main.R*
 This script includes function calls of:
 
 *listings_unique <- clean_raw_listing(raw_listings)*
