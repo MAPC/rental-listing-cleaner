@@ -10,7 +10,7 @@ html_document: default
 
 
 
-##Notations on the code
+## Notations on the code
 Considerations about the data structure and the settings of the code:
 
 - The warnings are ignored by the code 
@@ -49,7 +49,7 @@ This repository includes two R codes of  *Data_prep.R* and *main.R* codes. *Data
 
 
 
-###*Data_prep.R*
+### *Data_prep.R*
 Data_prep.R script includes different functions of:
 
 
@@ -304,7 +304,7 @@ This script includes function calls of:
 *generate_tables(listings_unique)*
 
 
-##*Future work*
+## *Future work*
 To improving the script it is suggested that:
 
 Probability functions be applied to each data point and added to the table as a new dimensions, these probabilities will imply the possibility that each point falls in one group. Through these weights another round of room validation is fissible.
