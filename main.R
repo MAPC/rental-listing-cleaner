@@ -14,7 +14,7 @@ options(warn=1)
 
 inFilePath <- Sys.getenv("IN_FILE_PATH")
 inFileName <- Sys.getenv("IN_FILE_NAME")
-inGeoName <- Sys.getenv("IN_GEO_NAME")
+#inGeoName <- Sys.getenv("IN_GEO_NAME")
 outFilePath <- Sys.getenv("OUT_FILE_PATH")
 
 codePath <- Sys.getenv("CODE_PATH")
@@ -50,9 +50,9 @@ listings_unique <- room_validator(listings_unique)
 #merge the data of listings unique with geo-located data
 #carlos_file <- read.csv("K:/DataServices/Projects/Current_Projects/rental_listings_research/data/carlos/170726_padmapper_sample_2.csv")
 setwd(inFilePath)
-carlos_file <- read.csv(inGeoName)
-y = carlos_file[ , c("id","fwd_geolocated", "rev_geolocated",'latitude_merge','longitude_merge','joint_addresses_merge','mapzen_geolocated','mapzen_confidence')] 
-listings_unique <- merge(listings_unique, y, by ="id",all.x = TRUE)
+#carlos_file <- read.csv(inGeoName)
+#y = carlos_file[ , c("id","fwd_geolocated", "rev_geolocated",'latitude_merge','longitude_merge','joint_addresses_merge','mapzen_geolocated','mapzen_confidence')] 
+#listings_unique <- merge(listings_unique, y, by ="id",all.x = TRUE)
 
 ###frequency table for the whole dataset/listings_unique and sample
 generate_tables(listings_unique)
