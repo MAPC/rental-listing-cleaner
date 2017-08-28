@@ -167,9 +167,9 @@ remove_duplicates <- function(listing, listingDup){
   
   if (missing(listingDup)){
     listingDup <- Dupllicate_finder(listing)
-    remove_duplicates(listing,listingDup)
+    uniqueListings <- remove_duplicates(listing,listingDup)
+    return(uniqueListings)
   }
-  
   else {
     craigs_list_dups <- listingDup[which(listingDup$source_id==1),]
   
@@ -183,10 +183,12 @@ remove_duplicates <- function(listing, listingDup){
     for (i in (1:length(unique(pm_dups$group)))){
       temp <- pm_dups[which(pm_dups$group == unique(pm_dups$group)[i]),]
       id <- temp$id[which(duplicated(temp$title))]
-      if(!identical(id, integer(0))){
+
+      if(length(id) != 0){
         listing <- listing[-which(listing$id %in% id),]
       }
     }
+
     return(listing)
   }
 }
@@ -194,7 +196,7 @@ remove_duplicates <- function(listing, listingDup){
 ##### room validator finction takes listing of records as argument, this function automatically calls 
 #####room analysis for studio and 1-10 bedroom room_analysis
 room_validator <- function(listing){
-  
+
   listing$numRooms <- -1
   
   #create keyWord list for studio and 1-10 bedrooms by calling com function
