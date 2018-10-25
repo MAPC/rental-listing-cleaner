@@ -12,13 +12,13 @@ options(warn=1)
 #codePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/r_scripts/analysis/rental-listing-cleaner/"
 #spatialSrcPath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/spatial"
 
-inFilePath <- Sys.getenv("IN_FILE_PATH")
-inFileName <- Sys.getenv("IN_FILE_NAME")
-#inGeoName <- Sys.getenv("IN_GEO_NAME")
-outFilePath <- Sys.getenv("OUT_FILE_PATH")
+inFilePath <- "/Users/eyoungberg/Projects/mapc/cleaner-data/csv"#Sys.getenv("IN_FILE_PATH")
+inFileName <- "mapped.csv"#Sys.getenv("IN_FILE_NAME")
+#inGeoName <- #Sys.getenv("IN_GEO_NAME")
+outFilePath <- "/Users/eyoungberg/Projects/mapc/cleaner-data/output"#Sys.getenv("OUT_FILE_PATH")
 
-codePath <- Sys.getenv("CODE_PATH")
-spatialSrcPath <- Sys.getenv("SPATIAL_SRC_PATH")
+codePath <- "/Users/eyoungberg/Projects/mapc/rental-listing-cleaner"#Sys.getenv("CODE_PATH")
+spatialSrcPath <- "/Users/eyoungberg/Projects/mapc/cleaner-data/spatial"#Sys.getenv("SPATIAL_SRC_PATH")
 
 
 ######function calls #############

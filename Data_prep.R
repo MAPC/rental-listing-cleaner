@@ -1,7 +1,7 @@
 # Created by: Pariya Pourmohammadi
 # Date: June/09/17
 # This code does data preparation including n-grams, and B of W, br_Analysis, spatial locator
-.libPaths("C:\\Program Files\\R\\R-3.4.0\\library")
+#.libPaths("C:\\Program Files\\R\\R-3.4.0\\library")
 
 options(scipen=999)
 options(max.print=10000)
@@ -22,11 +22,12 @@ require(foreign)
 #codePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/r_scripts/analysis/rental-listing-cleaner/"
 #spatialSrcPath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/spatial"
 
-inFilePath <- Sys.getenv("IN_FILE_PATH")
-outFilePath <- Sys.getenv("OUT_FILE_PATH")
-codePath <- Sys.getenv("CODE_PATH")
-spatialSrcPath <- Sys.getenv("SPATIAL_SRC_PATH")
+inFilePath <- "/Users/eyoungberg/Projects/mapc/cleaner-data/csv"#Sys.getenv("IN_FILE_PATH")
+inFileName <- "mapped.csv"#Sys.getenv("IN_FILE_NAME")
+outFilePath <- "/Users/eyoungberg/Projects/mapc/cleaner-data/output"#Sys.getenv("OUT_FILE_PATH")
 
+codePath <- "/Users/eyoungberg/Projects/mapc/rental-listing-cleaner"#Sys.getenv("CODE_PATH")
+spatialSrcPath <- "/Users/eyoungberg/Projects/mapc/cleaner-data/spatial"#Sys.getenv("SPATIAL_SRC_PATH")
 
 today <- Sys.Date()
 year<- format(today, "%Y")
@@ -210,7 +211,7 @@ room_validator <- function(listing){
   keywrdlst_seven_br <- comb(7)
   keywrdlst_eight_br <- comb(8) 
   keywrdlst_nine_br<- comb(9)
-  keywrdlst_ten_br<- comb(10)
+  keywrdlst_ten_br <- comb(10)
   
   # build all the excluded lists for studio & 1-10 br buildings
   excllst_studio <- c(keywrdlst_one_br,
@@ -353,10 +354,15 @@ room_validator <- function(listing){
   num <- 20
  
   #room_analysis function call for studio and 1-10 brs
+  
   for (i in 1:11){
+    patched <- c()
+    
     tryCatch({
+      patched <- listing
       listing <- room_analysis(unlist(keywrdlsts[i]),unlist(excllsts[i]) ,listing, attr_names[i], i-1, i-1, num )
     }, error = function(e) {
+      listing <- patched
       print(paste0("Base search failed in ",i-1," bedroom validation!"))
     })
   }
@@ -568,6 +574,7 @@ room_analysis <- function (keywrdlst, excl_list, listings, name, br, numBR, num 
   
 #tmp is the data frame which holds the whole records and chunchs of studio records will be removed from it gradually
     tmp <- listings
+    listings_copy <- listings
     name_2 <- paste(name,"_not_in_range")
     
     #create the new field with given name
@@ -644,7 +651,9 @@ room_analysis <- function (keywrdlst, excl_list, listings, name, br, numBR, num 
       filtered_recs <- filtered_recs[which(filtered_recs$ask > target_neighborhood$lower_bound & 
                                              filtered_recs$ask < target_neighborhood$upper_bound),]
       
-      if (!empty(filtered_recs)) filtered_recs <- exclude_recs(filtered_recs, excl_list)
+      if (!empty(filtered_recs)) {
+        filtered_recs <- exclude_recs(filtered_recs, excl_list)
+      }
       
       ind_lists <- c(0,0,0)
       
@@ -680,7 +689,7 @@ room_analysis <- function (keywrdlst, excl_list, listings, name, br, numBR, num 
     temp <- exclude_recs(temp, excl_list)
   
     if (!empty(temp)) temp[,name] <- 1
-    
+  
     #combines all the records and save it in X
     X <- NULL
     
@@ -728,12 +737,17 @@ room_analysis <- function (keywrdlst, excl_list, listings, name, br, numBR, num 
     range_neighborhood$total_range_lower[which(range_neighborhood$lower_bound < rec_statistics$lower_bound)] <- -1
     range_neighborhood$total_range_upper[which(range_neighborhood$upper_bound>rec_statistics$upper_bound)] <- +1
     
+    total_range_lower <- 'NA'
+    total_range_upper <- 'NA'
+    if (!is.null(rec_statistics$lower_bound)) total_range_lower <- paste("$", round(rec_statistics$lower_bound, digits = 0))
+    if (!is.null(rec_statistics$lower_bound)) total_range_upper <- paste("$", round(rec_statistics$upper_bound, digits = 0))
+    
     setwd(outFilePath)
     
     #write summary statistics of municipals and neighborhoods to file
     line=paste("THIS IS A SUMMARY STATISTICS OF ", name ," BASED ON MUNICIPALS")
-    text <- paste("The lower and upper bound of the asking price for the", name," are $" , 
-                  round(rec_statistics$lower_bound, digits = 0) ," and $", round(rec_statistics$upper_bound, digits = 0), 
+    text <- paste("The lower and upper bound of the asking price for the", name," are " , 
+                  total_range_lower ," and ", total_range_upper, 
                   " and the median value of ",name ,"rent for the whole MA is $",rec_statistics$median , sep = "")
     
     sink(paste(name,"_stat_muni",year,month,day,".txt",sep = "_"), append = TRUE)
@@ -775,11 +789,15 @@ room_analysis <- function (keywrdlst, excl_list, listings, name, br, numBR, num 
     write.csv(range_town, paste(name,"range_muni",year,month,day,".csv", sep = "_"))
     setwd(codePath)
     
-    if(!empty(tmp) & !empty(X)) {
+    if(nrow(tmp) != 0 & !(empty(X) || is.null(X))) {
       X$numRooms <- numBR
       tmp[,name] <- 0
       tmp <- rbind(tmp, X)
     }
+    else {
+      tmp <- listings_copy
+    }
+    
     return (tmp)
 }
   
