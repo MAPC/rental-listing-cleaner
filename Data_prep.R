@@ -22,12 +22,12 @@ require(foreign)
 #codePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/r_scripts/analysis/rental-listing-cleaner/"
 #spatialSrcPath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/spatial"
 
-inFilePath <- "/Users/eyoungberg/Projects/mapc/cleaner-data/csv"#Sys.getenv("IN_FILE_PATH")
-inFileName <- "mapped.csv"#Sys.getenv("IN_FILE_NAME")
-outFilePath <- "/Users/eyoungberg/Projects/mapc/cleaner-data/output"#Sys.getenv("OUT_FILE_PATH")
+inFilePath <- Sys.getenv("IN_FILE_PATH")
+inFileName <- Sys.getenv("IN_FILE_NAME")
+outFilePath <- Sys.getenv("OUT_FILE_PATH")
 
-codePath <- "/Users/eyoungberg/Projects/mapc/rental-listing-cleaner"#Sys.getenv("CODE_PATH")
-spatialSrcPath <- "/Users/eyoungberg/Projects/mapc/cleaner-data/spatial"#Sys.getenv("SPATIAL_SRC_PATH")
+codePath <- Sys.getenv("CODE_PATH")
+spatialSrcPath <- Sys.getenv("SPATIAL_SRC_PATH")
 
 today <- Sys.Date()
 year<- format(today, "%Y")
