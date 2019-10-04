@@ -525,11 +525,11 @@ Dupllicate_finder <- function(listing){
   
   dup_indices <- list()
   
-  for (i in (1:(length(listing[,1])-10))){
+  for (i in (1:(length(listing[,1])-30))){
     tmp2<- NULL      
     tmp1 <- NULL
     
-    temp1_dist <- stringdist(listing$title[i],listing$title[(i+1):(i+10)], method = "jw", p=0.1)
+    temp1_dist <- stringdist(listing$title[i],listing$title[(i+1):(i+30)], method = "jw", p=0.1)
     tmp1 <- i+ which(temp1_dist< 0.15)
     tmp1 <- tmp1[which(listing$ask[i] == listing$ask[tmp1] )]
     
