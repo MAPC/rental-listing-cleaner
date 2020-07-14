@@ -4,6 +4,7 @@
 .Rhistory
 .RData
 .Ruserdata
+.Renviron
 data
 output
 spatial

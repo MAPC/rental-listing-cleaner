@@ -8,12 +8,13 @@ pdf_document: default
 html_document: default
 ---
 
-
+# Setup
+You should copy .Renviron.template to .Renviron and set appropriate file path values.
 
 ## Notations on the code
 Considerations about the data structure and the settings of the code:
 
-- The warnings are ignored by the code 
+- The warnings are ignored by the code
 
 ```{}
 options(warn=-1)
@@ -36,7 +37,7 @@ shapefile names are: towns_MA.shp, comm_type.shp, census_tract.shp, 1partner_cit
 
 
 
-## Code files 
+## Code files
 
 This repository includes two R codes of  *Data_prep.R* and *main.R* codes. *Data_prep.R* is the script which encompasses all the functions and subfunctions(submodules) and *main.R* includes the function calls. These scripts basically construct one of the modules of a larger project named **Rental Listings Research** which is done by **Metropolitan Area Planning Council (MAPC)** of Boston. Main intention of this modeule is:
 
@@ -66,10 +67,10 @@ Unique_id Example: 2700 1 NO FEE Spacious One Bed w  Den HT HW Incld Close to Do
 
 - Calls the spatial_locator function and adds new attributes for muni, community type, town, neighborhood based on latitude and longitude of each point
 
-**input**: 
+**input**:
 Data frame of Raw_listings which is obtained from scraping the website **This listing should be in the defined format of MAPC scraper and shopuld include these colomn names: "id","ask","bedrooms","title","address","post_at","created_at","updated_at","source_id","survey_id","latitude","longitude"**
 
-**output**: 
+**output**:
 The Data frame of cleaned listing which has new attributes for the location, the location attributes include: community type, town, neighborhood and Census tract
 
 
@@ -77,10 +78,10 @@ The Data frame of cleaned listing which has new attributes for the location, the
 #### remove_duplicates <- function(listing, listingDup)
 This function uses the results of Dupllicate_finder function. For records which are collected from craigslist, the records with lower distance (which have same group values) will be removed and the first record will be kept, and for padmapper data those records which have identical titles will be removed.
 
-**input**: 
+**input**:
 The cleaned list of records and list of possible duplicates **list of possible duplicates is optional, if it is not passed it will be created by a function call from inside the remove_duplicates function and recursively the remove_duplicates function will be called**
 
-**output**: 
+**output**:
 The Data frame of deduplicated listing
 
 
@@ -91,35 +92,35 @@ This function will automatically validate the attribute *bedrooms* for **studio*
 For example for 1-bedroom listings it will create one col named **one_bedroom ** which is a boolean variable implying whether the point is one bedroom      or not and another column called **not_in_range_one_bedroom** which has values of -1, 0, +1. Since this function considers asking price as one        factor this dimension will clarify id the price is lower, withing or above the asking price threshold.
 
 
-**input**: 
-Data frame of Cleaned listings 
+**input**:
+Data frame of Cleaned listings
 
-**output**: 
-Data frame of Listings with new dimensions: 
+**output**:
+Data frame of Listings with new dimensions:
 numBR, studio, not_in_range_studio, one_bedroom, not_in_range_one_bedroom, etc.
 
 
 
 #### spatial_locator <- function (listing)
-This function Geo-locates the data and adds new dimensions for community_type, Town, Neighborhood and Census tract to the table. 
+This function Geo-locates the data and adds new dimensions for community_type, Town, Neighborhood and Census tract to the table.
 
 *Notation*: The reference shapefiles must follow the format of attribute names, if the attributes of reference shape does not match the column that the code reads the code will throw an Error!
 
-**input**: 
+**input**:
 Listings Data frame.
 
-**output**: 
-New Data frame of listings with new columns of community_type, Town, Neighborhood and Census tract 
+**output**:
+New Data frame of listings with new columns of community_type, Town, Neighborhood and Census tract
 
 
 
 #### Dupllicate_finder <- function(listing)
 finds all the possible duplicates based on **Jaro-Winkler** *(https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance)* distance of each title with next 10 titles , exactly matching prices (this number can be changed by user, the reasons for selecting 10 as the window size is: running time, high possibility of occurence of duplicates in small proximity) and exactly matching number of bedrooms value
 
-**input**: 
+**input**:
 Data frame of Listings
 
-**output**: 
+**output**:
 Possible duplicates, with a new dimension of Group pointing to the group which each data belongs to, the points with the same group are the ones with       high similarity in title and exact matching of bedrooms and asking price values.
 
 
@@ -141,13 +142,13 @@ numBR: the value for num_bedrooms that we want to set, for example for 1 bedroom
 
 num: the threshold of #of records per neighborhood
 
-**output**: 
+**output**:
 Listing with two new attributes for binary data, if a point is in the specific category or not. If the record's price is in the range or not. for example for 1-bedroom listings it will create one col named **one_bedroom ** which is a boolean variable implying whether the point is one bedroom or not and another column called **not_in_range_one_bedroom** which has values of -1, 0, +1
 
 
 
 #### comb <- function(index)
-create all the possible combination of words and generates records which point to specific group in room analysis. 
+create all the possible combination of words and generates records which point to specific group in room analysis.
 
 ```{r}
 require(ngram)
@@ -206,7 +207,7 @@ print(comb(2))
 #### Threshold_finder <- function (listing, name)
 Finds the median and standard deviation of asking price of any listing that is passed to the function and returnes the values of median, sd, lower and upper bounds. Lower bound is computed by subtraction of 1sd from median. If lower than 500$ will take 0.5 sd, if still lower than 500$ will consider 500$ as the lower bound. this function is a supporting function for room_analysis.
 
-**input**: 
+**input**:
 The df of listings and the name of boolean attribute based on whoch statistics are computed.
 
 **output**:
@@ -218,7 +219,7 @@ Summary statistics of the points with value of 1 in the target attribute.
 Finds the median and standard deviation of asking price of any listing that is passed to the function per community type, this function returnes the values of median, sd, lower and upper bounds for each Comm_type. Lower bound is computed by subtraction of 1sd from median. If lower than 500$ will take 0.5 sd, if still lower than 500$ will consider 500$ as the lower bound. this function is a supporting function for room_analysis.
 
 **input**:
-Data frame of Listings 
+Data frame of Listings
 
 **output**:
 Table of community types and asking price per comm type statistics.
@@ -259,17 +260,17 @@ A data frame that has none of the elements of excluding list in the title attrib
 
 
 #### n_gram_builder <- function(listing,val)
-Creates a large text of the titles in a listing and constructs table of n-grams from the text, this function is an auxhilary function which can be applied in more complicated computations and text mining methods. 
+Creates a large text of the titles in a listing and constructs table of n-grams from the text, this function is an auxhilary function which can be applied in more complicated computations and text mining methods.
 
 **input**:
-The data frame of listings, the value of n in n-gram. 
+The data frame of listings, the value of n in n-gram.
 
 **output**:
 A dataframe of ngrams, frequency and probability of each n-gram.
 
 
 
-### sample.DF <-function(x, percentile) 
+### sample.DF <-function(x, percentile)
 Builds a random sample of each data frame.
 
 **input**:
