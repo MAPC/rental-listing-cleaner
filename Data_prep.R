@@ -154,7 +154,7 @@ clean_raw_listing <- function(listing){
     listing$title   <- gsub(wrd_lst[i], " ", listing$title )
   }
   
-  listing <- listing['bedrooms' >=0]
+  listing <- listing[as.integer(listing$bedrooms) >= 0,]
   
   listing <- spatial_locator(listing)
   
@@ -684,7 +684,7 @@ room_analysis <- function (keywrdlst, excl_list, listings, name, br, numBR, num 
       }
     
     #filter the remaining records based on updated total recs statistics
-    temp <- tmp[which(tmp$bedrooms==br & tmp[,name]==0), ] 
+    temp <- tmp[which(tmp$bedrooms==br & tmp[,name]==0), ]
     temp <- exclude_recs(temp, excl_list)
   
     if (!empty(temp)) temp[,name] <- 1
