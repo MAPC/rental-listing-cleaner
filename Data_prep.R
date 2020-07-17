@@ -152,15 +152,14 @@ clean_raw_listing <- function(listing){
   
   for (i in (1: length(wrd_lst))){
     listing$title   <- gsub(wrd_lst[i], " ", listing$title )
-  } 
+  }
   
-  listing <- listing[-which(listing$bedrooms <0),]
+  listing <- listing['bedrooms' >=0]
   
   listing <- spatial_locator(listing)
   
   return(listing)
 }
-
 
 #this function removes duplicates according to results of duplicate finder, 
 #craigslist duplicates will be deleted, padmapper duplicates if have identical titles will be romoved
