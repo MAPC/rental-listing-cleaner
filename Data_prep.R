@@ -429,7 +429,7 @@ spatial_locator <- function (listing) {
   
   #read lat long attributes of the listing records and create event points of WGS1984 geographic projection 
   WCS1984_CRS <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
-  event.Points <- SpatialPoints(data.frame(latitude = listing$latitude, longitude= listing$longitude),
+  event.Points <- SpatialPoints(data.frame(longitude= listing$longitude, latitude = listing$latitude),
                                 proj4string = CRS(WCS1984_CRS))
   
   
