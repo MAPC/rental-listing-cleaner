@@ -17,6 +17,9 @@ require(rgdal)
 require(raster)
 require(foreign)
 
+# Use reticulate to run python-based fuzzy-dedupe function
+library(reticulate)
+
 #inFilePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/"
 #outFilePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/output/"
 #codePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/r_scripts/analysis/rental-listing-cleaner/"
@@ -521,6 +524,8 @@ spatial_locator <- function (listing) {
 #if less than 0.15 check the price and # of bedrooms if they are identical 
 #label the record as duplicate
 Dupllicate_finder <- function(listing){
+  py_run_file("script.py")
+  print(py$x)
   
   dup_indices <- list()
   
