@@ -25,18 +25,29 @@ library(reticulate)
 #codePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/r_scripts/analysis/rental-listing-cleaner/"
 #spatialSrcPath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/spatial"
 
-inFilePath <- Sys.getenv("IN_FILE_PATH")
-inFileName <- Sys.getenv("IN_FILE_NAME")
-outFilePath <- Sys.getenv("OUT_FILE_PATH")
+inFilePath <- "/Users/jmckenzie/Projects/rental-listing-cleaner"
+inFileName <- "mapped.csv"
+#outFilePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/output/"
+outFilePath <- "/Users/jmckenzie/Projects/rental-listing-cleaner/output"
+#codePath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/r_scripts/analysis/rental-listing-cleaner/"
+codePath <- "/Users/jmckenzie/Projects/rental-listing-cleaner"
+#spatialSrcPath <- "K:/DataServices/Projects/Current_Projects/rental_listings_research/data/spatial"
+spatialSrcPath <- "/Users/jmckenzie/Projects/rental-listings-data-analysis/data/spatial"
 
-codePath <- Sys.getenv("CODE_PATH")
-spatialSrcPath <- Sys.getenv("SPATIAL_SRC_PATH")
+# inFilePath <- Sys.getenv("IN_FILE_PATH")
+# inFileName <- Sys.getenv("IN_FILE_NAME")
+# outFilePath <- Sys.getenv("OUT_FILE_PATH")
+
+# codePath <- Sys.getenv("CODE_PATH")
+# spatialSrcPath <- Sys.getenv("SPATIAL_SRC_PATH")
 
 today <- Sys.Date()
 year<- format(today, "%Y")
 month <- format(today, "%m")
 day <- format(today, "%d")
 unixTime <- as.numeric(Sys.time())
+
+distance_threshold <- 0.15 #0.15 is the original value for stringdist
 
 #clean_raw_listing function cleans the title, removes duplicates and assigns spatial locations
 clean_raw_listing <- function(listing){
@@ -167,9 +178,39 @@ clean_raw_listing <- function(listing){
 #this function removes duplicates according to results of duplicate finder, 
 #craigslist duplicates will be deleted, padmapper duplicates if have identical titles will be romoved
 remove_duplicates <- function(listing, listingDup){
-  
+
   if (missing(listingDup)){
     listingDup <- Dupllicate_finder(listing)
+    uniqueListings <- remove_duplicates(listing,listingDup)
+    return(uniqueListings)
+  }
+  else {
+    craigs_list_dups <- listingDup[which(listingDup$source_id==1),]
+  
+    craigs_list_dedup <- subset(craigs_list_dups[!duplicated( craigs_list_dups$group), ])
+    
+    listing <- listing[-which(listing$id %in% craigs_list_dups$id),]
+    listing <- rbind(listing, craigs_list_dedup[,1:27])
+    
+    pm_dups <- listingDup[which(listingDup$source_id ==2),]
+    
+    for (i in (1:length(unique(pm_dups$group)))){
+      temp <- pm_dups[which(pm_dups$group == unique(pm_dups$group)[i]),]
+      id <- temp$id[which(duplicated(temp$title))]
+
+      if(length(id) != 0){
+        listing <- listing[-which(listing$id %in% id),]
+      }
+    }
+
+    return(listing)
+  }
+}
+
+fuzzy_remove_duplicates <- function(listing, listingDup){
+
+  if (missing(listingDup)){
+    listingDup <- fuzzy_duplicate_finder(listing)
     uniqueListings <- remove_duplicates(listing,listingDup)
     return(uniqueListings)
   }
@@ -399,7 +440,7 @@ spatial_locator <- function (listing) {
     stop("Level 3 neighborhood file not available!"))
   
   #read shape files of source boundaries including towns, census tracts, neighborhoods
-  towns.shape <- readOGR(dsn=path.expand(spatialSrcPath), layer ="towns_MA")
+  towns.shape <- readOGR('/Users/jmckenzie/Projects/rental-listings-data-analysis/data/spatial/towns_MA.shp')
   
   comm_type.shape <- readOGR(dsn=path.expand(spatialSrcPath), layer ="comm_type")
   
@@ -524,8 +565,11 @@ spatial_locator <- function (listing) {
 #if less than 0.15 check the price and # of bedrooms if they are identical 
 #label the record as duplicate
 Dupllicate_finder <- function(listing){
-  py_run_file("script.py")
-  print(py$x)
+  # print(df_2.head(10))
+  # fuzz_token_set_ratio(df_num)
+  # fuzzy_dup_indices <- get_fuzzy_dup_indices(listing)
+  # print("fuzzy_dup_indices")
+  # print(fuzzy_dup_indices)
   
   dup_indices <- list()
   
@@ -534,7 +578,9 @@ Dupllicate_finder <- function(listing){
     tmp1 <- NULL
     
     temp1_dist <- stringdist(listing$title[i],listing$title[(i+1):(i+30)], method = "jw", p=0.1)
-    tmp1 <- i+ which(temp1_dist< 0.15)
+    # print("orig temp1_dist:")
+    # print(temp1_dist)
+    tmp1 <- i+ which(temp1_dist< distance_threshold)
     tmp1 <- tmp1[which(listing$ask[i] == listing$ask[tmp1] )]
     
     if(length(tmp1 > 0)) {
@@ -546,6 +592,9 @@ Dupllicate_finder <- function(listing){
       
     } 
   }
+
+  print("dup_indices")
+  print(dup_indices)
   
   duplicate_listing_indices <- reshape2:: melt(dup_indices)
   names(duplicate_listing_indices) <- c("index", "group")
@@ -557,6 +606,50 @@ Dupllicate_finder <- function(listing){
   
   setwd(outFilePath)
   write.csv(duplicate_listing, paste0("duplicate_listing",year,month,day,".csv"))
+  setwd(codePath)
+  
+  return(duplicate_listing)
+}
+
+fuzzy_duplicate_finder <- function(listing){
+  source_python("fuzzy.py")
+  
+  dup_indices <- list()
+  
+  for (i in (1:(length(listing[,1])-30))){
+    tmp2<- NULL      
+    tmp1 <- NULL
+    
+    temp1_dist <- fuzzdist(listing$title[i],listing$title[(i+1):(i+30)])
+    # print("fuzzy temp1_dist:")
+    # print(temp1_dist)
+    # temp1_dist <- stringdist(listing$title[i],listing$title[(i+1):(i+30)], method = "jw", p=0.1)
+    tmp1 <- i+ which(temp1_dist< distance_threshold)
+    tmp1 <- tmp1[which(listing$ask[i] == listing$ask[tmp1] )]
+    
+    if(length(tmp1 > 0)) {
+      tmp2 <- tmp1[which(listing$bedrooms[i] == listing$bedrooms[tmp1])]
+    }
+    
+    if ((length(tmp2)>0))  {
+      dup_indices[length(dup_indices)+1] <- list(c(i, tmp2))
+      
+    } 
+  }
+
+  print("fuzzy_dup_indices")
+  print(dup_indices)
+  
+  duplicate_listing_indices <- reshape2:: melt(dup_indices)
+  names(duplicate_listing_indices) <- c("index", "group")
+  duplicate_listing_indices <- duplicate_listing_indices[-which(duplicated(duplicate_listing_indices$index)),]
+  
+  duplicate_listing <-listing[duplicate_listing_indices$index,]
+  group <- duplicate_listing_indices$group
+  duplicate_listing <- cbind(duplicate_listing, group)
+  
+  setwd(outFilePath)
+  write.csv(duplicate_listing, paste0("fuzzy_duplicate_listing",year,month,day,".csv"))
   setwd(codePath)
   
   return(duplicate_listing)
@@ -1116,6 +1209,54 @@ generate_tables <- function (listings){
   write.csv(table_neighborhoods3, paste("table_neighborhoods3",year,month,day,".csv", sep="_"))
   write.csv(listings, paste(unixTime,"listings_unique.csv", sep="_"))
   write.csv(listings_sample, paste("10_pct_listings_sample",year,month,day,".csv", sep="_"))
+  
+  setwd(codePath)
+}
+
+fuzzy_generate_tables <- function (listings){
+  
+  ##create summary tables for all the listings records based on towns after cleaning the data
+  table_towns <- data.frame(table(unlist(listings$muni)))
+  asking_towns <-reshape2:: melt(unlist(tapply(listings$ask, listings$muni, FUN = median)))
+  table_towns <- merge(table_towns,asking_towns,all = TRUE, by ="Var1")
+  names(table_towns) <- c("muni", "frequency", "median asking price")
+  
+  ##create summary tables for all the listings records based on census tracts after cleaning the data
+  table_census_tracts <- data.frame(table(unlist(listings$ct10_id)))
+  asking_census_tracts<-reshape2:: melt(unlist(tapply(listings$ask, listings$ct10_id, FUN = median)))
+  table_census_tracts <- merge(table_census_tracts,asking_census_tracts,all = TRUE, by ="Var1")
+  names(table_census_tracts) <- c("CT10", "frequency", "median asking price")
+  
+  ##create summary tables for all the listings records based on neighborhoods1 after cleaning the data
+  table_neighborhoods1 <- data.frame(table(unlist(listings$neighborhood_01)))
+  asking_neighborhoods1<-reshape2:: melt(unlist(tapply(listings$ask, listings$neighborhood_01, FUN = median)))
+  table_neighborhoods1 <- merge(table_neighborhoods1,asking_neighborhoods1,all = TRUE, by ="Var1")
+  names(table_neighborhoods1) <- c("neighborhoods1", "frequency", "median asking price")
+  
+  ##create summary tables for all the listings records based on neighborhoods2 after cleaning the data
+  table_neighborhoods2 <- data.frame(table(unlist(listings$neighborhood_02)))
+  asking_neighborhoods2<-reshape2:: melt(unlist(tapply(listings$ask, listings$neighborhood_02, FUN = median)))
+  table_neighborhoods2 <- merge(table_neighborhoods2,asking_neighborhoods2,all = TRUE, by ="Var1")
+  names(table_neighborhoods2) <- c("neighborhoods2", "frequency", "median asking price")
+  
+  ##create summary tables for all the listings records based on neighborhoods3 after cleaning the data
+  table_neighborhoods3 <- data.frame(table(unlist(listings$neighborhood_03)))
+  asking_neighborhoods3<-reshape2:: melt(unlist(tapply(listings$ask, listings$neighborhood_03, FUN = median)))
+  table_neighborhoods3 <- merge(table_neighborhoods3,asking_neighborhoods3,all = TRUE, by ="Var1")
+  names(table_neighborhoods3) <- c("neighborhoods3", "frequency", "median asking price")
+  
+  #call sample.DF function to create a sample of 10% of the final data to do validation
+  listings_sample <- sample.DF(x = listings, percentile = 10)
+  
+  setwd(outFilePath)
+  
+  write.csv(table_towns, paste("fuzzy_table_towns",year,month,day,".csv", sep="_"))
+  write.csv(table_census_tracts, paste("fuzzy_table_census_tracts",year,month,day,".csv", sep="_"))
+  write.csv(table_neighborhoods1, paste("fuzzy_table_neighborhoods1",year,month,day,".csv", sep="_"))
+  write.csv(table_neighborhoods2, paste("fuzzy_table_neighborhoods2",year,month,day,".csv", sep="_"))
+  write.csv(table_neighborhoods3, paste("fuzzy_table_neighborhoods3",year,month,day,".csv", sep="_"))
+  write.csv(listings, paste(unixTime,"fuzzy_listings_unique.csv", sep="_"))
+  write.csv(listings_sample, paste("fuzzy_10_pct_listings_sample",year,month,day,".csv", sep="_"))
   
   setwd(codePath)
 }
